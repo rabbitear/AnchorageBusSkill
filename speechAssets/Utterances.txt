@@ -1,0 +1,4 @@
+WhenNextBusIntent next bus to {ToWhere}
+WhenNextBusIntent next bus {ToWhere}
+WhenNextBusIntent busing {ToWhere}
+

@@ -1,0 +1,14 @@
+{
+  "intents": [
+    {
+      "intent": "WhenNextBusIntent",
+      "slots": [
+        {
+          "name": "ToWhere",
+          "type": "LIST_OF_DESTINATIONS"
+        }
+      ]
+    }
+  ]
+}
+
