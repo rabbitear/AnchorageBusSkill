@@ -1,17 +1,16 @@
 // Skill for Anchorage Bus
 var Alexa = require('alexa-sdk');
-var http = require('http');
+var rp = require('request-promise');
 
 const skillName = "Anchorage Bus";
 
-var options = {
-    host: 'bustracker.muni.org',
-    path: '/InfoPoint/departures.aspx?stopid=1632'
-}
-
 exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
-    alexa.APP_ID = process.env.ALEXA_APP_ID;
+    //this if is for alexa-skill-test for local testing.
+    if ('undefined' === typeof process.env.DEBUG) {
+      alexa.appId = process.env.ALEXA_APP_ID;
+    }
+    //alexa.APP_ID = process.env.ALEXA_APP_ID;
     alexa.registerHandlers(handlers);
     alexa.execute();
 };
@@ -19,30 +18,47 @@ exports.handler = function(event, context, callback) {
 var handlers = {
     "WhenNextBusIntent": function() {
         var whereto = this.event.request.intent.slots.ToWhere.value;
-        var speechOutput = "";
-        if(whereto && whereto.toLowerCase() == "downtown") {
-            http.request(options, function(response) {
-                var str = '';
-                // another chunk of data has been recieved, 
-                // so append it to str.
-                response.on('data', function (chunk) {
-                    str += chunk;
-                });
-                // the whole response has been recieved, here.
-                response.on('end', function () {
-                    // regex looks for times: 
-                    // <div class='departure'>04:57 PM</div>
-                    var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+)<\/div>/g;
-                    var matches = getMatches(str, rePattern, 1);
-                    console.log(matches);
-                    speechOutput = "The next Bus 7 to inbound to Downtown is at " + matches[1] + ".";
-                });
-            }).end();
-        } else if(whereto && whereto.toLowerCase() == "diamond center") {
-            speechOutput = "The next Bus 7 outbound to Diamond Center is in such and such minutes."
-        } else {
-            speechOutput = "I don't have that destination in the database."
+        var speechOutput = "ok";
+        var nextBusTime = "PARTY TIME!";
+        var busStopNumber = '0';
+
+        switch (whereto) {
+            case 'downtown':
+                busStopNumber = '1632';
+                break;
+            case 'inbound':
+                busStopNumber = '1632';
+                break;
+            case 'diamond center':
+                busStopNumber = '1615';
+                break;
+            case 'outbound':
+                busStopNumber = '1615';
+                break;
         }
+
+        var options = {
+            method: 'GET',
+            uri: 'http://bustracker.muni.org/InfoPoint/departures.aspx?stopid=' + busStopNumber
+        }
+
+        reqprom = rp(options)
+            .then(function(response) {
+                console.log('GOT: ' + response.length + ' bytes.');
+                var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+)<\/div>/g;
+                var matches = getMatches(response, rePattern, 1);
+                nextBusTime = matches[0]; // cp 1st bus departure time.
+                console.log('AFTER response, nextBusTime: ' + nextBusTime);
+                speechOutput = "The Next number 7 bus going to " +whereto+
+                " will arrive at the stop at " + nextBusTime +  ".";
+                console.log("VAR response holds: " + response);
+            })
+            .catch(function(err) {
+                console.log('API call failed.');
+                speechOutput = "call to get the bus times had failed, "+
+                " please try again later.";
+            });
+        console.log("VAR reqporm: " + reqprom)
         this.emit(':tell', speechOutput);
     },
 
@@ -50,7 +66,7 @@ var handlers = {
         var speechOutput = "Goodbye";
         this.emit(':tell', speechOutput);
     },
- 
+
     "AMAZON.CancelIntent": function () {
         var speechOutput = "Goodbye";
         this.emit(':tell', speechOutput);
@@ -77,4 +93,5 @@ function getMatches(string, regex, index) {
   }
   return matches;
 }
+
 

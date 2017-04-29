@@ -1,4 +1,13 @@
 WhenNextBusIntent next bus to {ToWhere}
 WhenNextBusIntent next bus {ToWhere}
 WhenNextBusIntent busing {ToWhere}
+WhenNextBusIntent {ToWhere}
+WhenNextBusIntent the bus {ToWhere}
+WhenNextBusIntent going {ToWhere}
+WhenNextBusIntent headed {ToWhere}
+WhenNextBusIntent heading {ToWhere}
+WhenNextBusIntent {ToWhere} distination
+WhenNextBusIntent {ToWhere} heading
+WhenNextBusIntent {ToWhere} going
+ 
 

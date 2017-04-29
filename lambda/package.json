@@ -15,6 +15,7 @@
   "author": "Jon Bradley",
   "dependencies": {
     "alexa-sdk": "^1.0.9",
-    "http": "0.0.0"
+    "request": "^2.81.0",
+    "request-promise": "^4.2.0"
   }
 }
