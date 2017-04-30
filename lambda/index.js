@@ -1,6 +1,8 @@
 // Skill for Anchorage Bus
 var Alexa = require('alexa-sdk');
 var rp = require('request-promise');
+var moment = require('moment');
+var momentPreciseRangePlugin = require('moment-precise-range-plugin');
 
 const skillName = "Anchorage Bus";
 
@@ -21,6 +23,7 @@ var handlers = {
         var speechOutput = "ok";
         var nextBusTime = "PARTY TIME!";
         var busStopNumber = '0';
+        var busRouteNumber = '7';
 
         switch (whereto) {
             case 'downtown':
@@ -46,19 +49,23 @@ var handlers = {
         rp(options)
             .then(function(response) {
                 console.log('GOT: ' + response.length + ' bytes.');
-                //var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+)<\/div>/g;
                 var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+|Done)<\/div>/g;
                 var matches = getMatches(response, rePattern, 1);
                 nextBusTime = matches[0]; // cp 1st bus departure time.
-                console.log('AFTER response, nextBusTime: ' + nextBusTime);
+                nextBusMoment = moment(nextBusTime, "HH:mm a");
+                nextBusTimeStatement = moment().preciseDiff(nextBusMoment);
+                console.log('VAR nextBusTime: '+nextBusTime);
+                console.log('VAR nextBusTimeStatement: '+
+                        nextBusTimeStatement)
                 if(nextBusTime === "Done") {
                     speechOutput = "There are no more buses scheduled on "+
-                    "route 7 tonight, please try again tomorrow morning "+
+                    "route "+busRouteNumber+" tonight, please try "+
+                    " again tomorrow morning "+
                     " and have a nice night."}
                 else {
-                    speechOutput = "The Next number 7 bus going to "+
-                    whereto+ " will arrive at the stop at "+
-                    nextBusTime +  ".";
+                    speechOutput = "The Next Anchorage bus, route number "+
+                    busRouteNumber+", going to "+whereto+ " will be at "+
+                    "bus stop in "+nextBusTimeStatement+".";
                 }
                 console.log("VAR response holds: " + response);
                 // if nextBusTime = undefined, the buses are done.
