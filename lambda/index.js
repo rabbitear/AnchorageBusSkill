@@ -51,10 +51,16 @@ var handlers = {
                 var matches = getMatches(response, rePattern, 1);
                 nextBusTime = matches[0]; // cp 1st bus departure time.
                 console.log('AFTER response, nextBusTime: ' + nextBusTime);
-                speechOutput = "The Next number 7 bus going to " +whereto+
-                " will arrive at the stop at " + nextBusTime +  ".";
+                if(nextBusTime === "Done") {
+                    speechOutput = "There are no more buses scheduled on "+
+                    "route 7 tonight, please try again tomorrow morning "+
+                    " and have a nice night."}
+                else {
+                    speechOutput = "The Next number 7 bus going to "+
+                    whereto+ " will arrive at the stop at "+
+                    nextBusTime +  ".";
+                }
                 console.log("VAR response holds: " + response);
-                console.log("Trying to emit a tell...")
                 // if nextBusTime = undefined, the buses are done.
                 that.emit(':tell', speechOutput);
             })
