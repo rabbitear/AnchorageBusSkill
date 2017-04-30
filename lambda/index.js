@@ -1,4 +1,6 @@
 // Skill for Anchorage Bus
+// The App Id is set in lambda's env's
+// Also set TZ in lambda's env to get correct times.
 var Alexa = require('alexa-sdk');
 var rp = require('request-promise');
 var moment = require('moment');
@@ -11,8 +13,8 @@ exports.handler = function(event, context, callback) {
     //this if is for alexa-skill-test for local testing.
     if ('undefined' === typeof process.env.DEBUG) {
       alexa.appId = process.env.ALEXA_APP_ID;
+      alexa.APP_ID = process.env.ALEXA_APP_ID;
     }
-    //alexa.APP_ID = process.env.ALEXA_APP_ID;
     alexa.registerHandlers(handlers);
     alexa.execute();
 };
@@ -24,19 +26,24 @@ var handlers = {
         var nextBusTime = "PARTY TIME!";
         var busStopNumber = '0';
         var busRouteNumber = '7';
+        var busDirection = "Home";
 
         switch (whereto) {
             case 'downtown':
                 busStopNumber = '1632';
+                busDirection = 'inbound';
                 break;
             case 'inbound':
                 busStopNumber = '1632';
+                busDirection = 'inbound';
                 break;
             case 'diamond center':
                 busStopNumber = '1615';
+                busDirection = 'outbound';
                 break;
             case 'outbound':
                 busStopNumber = '1615';
+                busDirection = 'outbound';
                 break;
         }
 
@@ -49,6 +56,9 @@ var handlers = {
         rp(options)
             .then(function(response) {
                 console.log('GOT: ' + response.length + ' bytes.');
+
+                // This is the pattern for, how many minutes until
+                // next bus.
                 var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+|Done)<\/div>/g;
                 var matches = getMatches(response, rePattern, 1);
                 nextBusTime = matches[0]; // cp 1st bus departure time.
@@ -57,18 +67,19 @@ var handlers = {
                 console.log('VAR nextBusTime: '+nextBusTime);
                 console.log('VAR nextBusTimeStatement: '+
                         nextBusTimeStatement)
+
                 if(nextBusTime === "Done") {
                     speechOutput = "There are no more buses scheduled on "+
                     "route "+busRouteNumber+" tonight, please try "+
                     " again tomorrow morning "+
                     " and have a nice night."}
                 else {
-                    speechOutput = "The Next Anchorage bus, route number "+
+                    speechOutput = "The next bus, route number "+
                     busRouteNumber+", going to "+whereto+ " will be at "+
-                    "bus stop in "+nextBusTimeStatement+".";
+                    "the bus stop in... "+nextBusTimeStatement+".";
                 }
+
                 console.log("VAR response holds: " + response);
-                // if nextBusTime = undefined, the buses are done.
                 that.emit(':tell', speechOutput);
             })
             .catch(function(err) {
@@ -92,8 +103,14 @@ var handlers = {
     "LaunchRequest": function() {
         var speechText = "";
         speechText += "Welcome to " + skillName + ". ";
-        speechText += "Please say your destination for bus number 7, either downtown or diamond center."
-        var repromptText = "For instructions on what you can say, please sayhelp me."
+        speechText += "Please say your destination for bus 7.";
+
+        var repromptText = "";
+        repromptText += "You can say a destination like ";
+        repromptText += "either downtown or diamond center...";
+        repromptText += "For instructions more on what you can say, ";
+        repromptText += "say: help me.";
+
         this.emit(':ask', speechText, repromptText);
     }
 };
