@@ -46,7 +46,8 @@ var handlers = {
         rp(options)
             .then(function(response) {
                 console.log('GOT: ' + response.length + ' bytes.');
-                var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+)<\/div>/g;
+                //var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+)<\/div>/g;
+                var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+|Done)<\/div>/g;
                 var matches = getMatches(response, rePattern, 1);
                 nextBusTime = matches[0]; // cp 1st bus departure time.
                 console.log('AFTER response, nextBusTime: ' + nextBusTime);
@@ -54,8 +55,8 @@ var handlers = {
                 " will arrive at the stop at " + nextBusTime +  ".";
                 console.log("VAR response holds: " + response);
                 console.log("Trying to emit a tell...")
+                // if nextBusTime = undefined, the buses are done.
                 that.emit(':tell', speechOutput);
-                console.log("May have emitted a tell...")
             })
             .catch(function(err) {
                 console.log('API call failed.');
