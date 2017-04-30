@@ -42,7 +42,8 @@ var handlers = {
             uri: 'http://bustracker.muni.org/InfoPoint/departures.aspx?stopid=' + busStopNumber
         }
 
-        reqprom = rp(options)
+        let that = this;
+        rp(options)
             .then(function(response) {
                 console.log('GOT: ' + response.length + ' bytes.');
                 var rePattern = /<div[^<>]*\ class=\'departure\'[^<>]*>(\d\d:\d\d\s\w+)<\/div>/g;
@@ -52,14 +53,16 @@ var handlers = {
                 speechOutput = "The Next number 7 bus going to " +whereto+
                 " will arrive at the stop at " + nextBusTime +  ".";
                 console.log("VAR response holds: " + response);
+                console.log("Trying to emit a tell...")
+                that.emit(':tell', speechOutput);
+                console.log("May have emitted a tell...")
             })
             .catch(function(err) {
                 console.log('API call failed.');
                 speechOutput = "call to get the bus times had failed, "+
                 " please try again later.";
+                that.emit(':tell', speechOutput);
             });
-        console.log("VAR reqporm: " + reqprom)
-        this.emit(':tell', speechOutput);
     },
 
     "AMAZON.StopIntent": function () {
