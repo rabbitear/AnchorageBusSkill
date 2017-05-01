@@ -24,23 +24,25 @@ var handlers = {
         var whereto = this.event.request.intent.slots.ToWhere.value;
         var speechOutput = "ok";
         var nextBusTime = "PARTY TIME!";
+        var nextBusMoment = '0';
         var busStopNumber = '0';
         var busRouteNumber = '7';
         var busDirection = "Home";
 
         switch (whereto) {
             case 'downtown':
-                busStopNumber = '1632';
-                busDirection = 'inbound';
-                break;
             case 'inbound':
+            case 'transit center':
+            case 'anchorage transit center':
+            case 'downtown bus station':
+            case 'downtown bus terminal':
                 busStopNumber = '1632';
                 busDirection = 'inbound';
                 break;
             case 'diamond center':
-                busStopNumber = '1615';
-                busDirection = 'outbound';
-                break;
+            case 'diamond mall':
+            case 'diamond center mall':
+            case 'diamond':
             case 'outbound':
                 busStopNumber = '1615';
                 busDirection = 'outbound';
@@ -64,22 +66,27 @@ var handlers = {
                 nextBusTime = matches[0]; // cp 1st bus departure time.
                 nextBusMoment = moment(nextBusTime, "HH:mm a");
                 nextBusTimeStatement = moment().preciseDiff(nextBusMoment);
+
+                // log the numbers to be outputted.
                 console.log('VAR nextBusTime: '+nextBusTime);
                 console.log('VAR nextBusTimeStatement: '+
-                        nextBusTimeStatement)
+                        nextBusTimeStatement);
+                console.log('Current Server Time: '+ moment());
 
                 if(nextBusTime === "Done") {
                     speechOutput = "There are no more buses scheduled on "+
                     "route "+busRouteNumber+" tonight, please try "+
                     " again tomorrow morning "+
-                    " and have a nice night."}
-                else {
+                    " and have a nice night.";
+                } else {
                     speechOutput = "The next bus, route number "+
                     busRouteNumber+", going to "+whereto+ " will be at "+
-                    "the bus stop in... "+nextBusTimeStatement+".";
+                    "the bus stop in... "+nextBusTimeStatement+"."+
+                    "Warning buses have been known to be five minutes "+
+                    " early.";
                 }
 
-                console.log("VAR response holds: " + response);
+                console.log("COMPLETE HTTP RESPONSE holds: " + response);
                 that.emit(':tell', speechOutput);
             })
             .catch(function(err) {
