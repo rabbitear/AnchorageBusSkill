@@ -81,9 +81,7 @@ var handlers = {
                 } else {
                     speechOutput = "The next bus, route number "+
                     busRouteNumber+", going to "+whereto+ " will be at "+
-                    "the bus stop in... "+nextBusTimeStatement+"."+
-                    "Warning buses have been known to be five minutes "+
-                    " early.";
+                    "the bus stop in... "+nextBusTimeStatement+".";
                 }
 
                 console.log("COMPLETE HTTP RESPONSE holds: " + response);
@@ -117,6 +115,9 @@ var handlers = {
         repromptText += "either downtown or diamond center...";
         repromptText += "For instructions more on what you can say, ";
         repromptText += "say: help me.";
+        repromptText += "Warning buses have been known to be ";
+        repromptText += "five minutes  early.";
+
 
         this.emit(':ask', speechText, repromptText);
     }
